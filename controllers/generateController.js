@@ -292,14 +292,26 @@ const callReplicateAPI = async (prompt, files) => {
  * @param {Array} files - Array of uploaded files to delete
  */
 const cleanupUploadedFiles = (files) => {
+    if (!files || !Array.isArray(files)) {
+        console.log('🗑️ No files to cleanup');
+        return;
+    }
+    
     files.forEach(file => {
         try {
-            if (fs.existsSync(file.path)) {
-                fs.unlinkSync(file.path);
-                console.log(`🗑️ Cleaned up temporary file: ${file.filename}`);
+            // Check if file object and path exist
+            if (file && file.path && typeof file.path === 'string') {
+                if (fs.existsSync(file.path)) {
+                    fs.unlinkSync(file.path);
+                    console.log(`🗑️ Cleaned up temporary file: ${file.filename || file.path}`);
+                } else {
+                    console.log(`⚠️ File not found for cleanup: ${file.path}`);
+                }
+            } else {
+                console.log('⚠️ Invalid file object for cleanup:', file);
             }
         } catch (error) {
-            console.error(`Error deleting file ${file.filename}:`, error);
+            console.error(`❌ Error deleting file ${file.filename || file.path}:`, error.message);
         }
     });
 };

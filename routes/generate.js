@@ -4,9 +4,17 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { generateBabyImage, getTransformations } = require('../controllers/generateController');
 
 const router = express.Router();
+
+// Ensure uploads directory exists
+const uploadsDir = './uploads/';
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('📁 Created uploads directory');
+}
 
 // Configure multer for handling image uploads
 const storage = multer.diskStorage({
