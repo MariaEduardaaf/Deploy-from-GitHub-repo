@@ -9,38 +9,11 @@ const { generateBabyImage, getTransformations } = require('../controllers/genera
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadsDir = './uploads/';
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('📁 Created uploads directory');
-}
+// Use memory storage for Railway deployment (ephemeral filesystem)
+// This avoids file system issues on container-based platforms
+const storage = multer.memoryStorage();
 
-// Configure multer for handling image uploads
-const storage = multer.diskStorage({
-    // Set destination folder for uploaded files
-    destination: (req, file, cb) => {
-        console.log('📁 Setting upload destination...');
-        const uploadPath = './uploads/';
-        
-        // Ensure directory exists before upload
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-            console.log('📁 Created uploads directory during upload');
-        }
-        
-        cb(null, uploadPath);
-    },
-    
-    // Generate unique filename for each upload
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const extension = path.extname(file.originalname) || '.jpg';
-        const filename = 'babyblur-' + uniqueSuffix + extension;
-        console.log(`📝 Generated filename: ${filename}`);
-        cb(null, filename);
-    }
-});
+console.log('💾 Using memory storage for file uploads (Railway optimized)');
 
 // File filter to only allow image uploads
 const fileFilter = (req, file, cb) => {

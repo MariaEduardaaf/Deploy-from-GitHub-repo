@@ -28,14 +28,15 @@ const generateBabyImage = async (req, res) => {
             });
         }
         
-        // Log file details
+        // Log file details for memory storage
         req.files.forEach((file, index) => {
             console.log(`📎 File ${index + 1}:`, {
-                filename: file.filename,
-                path: file.path,
-                size: file.size,
+                fieldname: file.fieldname,
+                originalname: file.originalname,
+                encoding: file.encoding,
                 mimetype: file.mimetype,
-                exists: fs.existsSync(file.path)
+                size: file.size,
+                buffer_length: file.buffer ? file.buffer.length : 'undefined'
             });
         });
 
@@ -89,8 +90,8 @@ const generateBabyImage = async (req, res) => {
             imageGenerationResponse = await callOpenAIAPI(prompt, req.files);
         }
 
-        // Clean up uploaded files after processing
-        cleanupUploadedFiles(req.files);
+        // No cleanup needed for memory storage
+        console.log('💾 Memory storage used - no file cleanup required');
 
         // Return the generated image
         res.json({
@@ -117,10 +118,8 @@ const generateBabyImage = async (req, res) => {
             });
         }
 
-        // Clean up files on error
-        if (req.files) {
-            cleanupUploadedFiles(req.files);
-        }
+        // No cleanup needed for memory storage
+        console.log('💾 Memory storage - no cleanup needed on error');
 
         // Handle different types of errors
         if (error.response && error.response.status === 400) {
