@@ -20,14 +20,25 @@ if (!fs.existsSync(uploadsDir)) {
 const storage = multer.diskStorage({
     // Set destination folder for uploaded files
     destination: (req, file, cb) => {
-        cb(null, './uploads/');
+        console.log('📁 Setting upload destination...');
+        const uploadPath = './uploads/';
+        
+        // Ensure directory exists before upload
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+            console.log('📁 Created uploads directory during upload');
+        }
+        
+        cb(null, uploadPath);
     },
     
     // Generate unique filename for each upload
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const extension = path.extname(file.originalname);
-        cb(null, 'babyblur-' + uniqueSuffix + extension);
+        const extension = path.extname(file.originalname) || '.jpg';
+        const filename = 'babyblur-' + uniqueSuffix + extension;
+        console.log(`📝 Generated filename: ${filename}`);
+        cb(null, filename);
     }
 });
 
@@ -74,9 +85,13 @@ const upload = multer({
  * Accepts 1-2 image files via multipart/form-data
  */
 router.post('/generate-image', (req, res, next) => {
+    console.log('📤 Incoming upload request...');
+    
     // Use multer middleware to handle file uploads
     upload.array('images', 2)(req, res, (err) => {
         if (err instanceof multer.MulterError) {
+            console.error('❌ Multer error:', err.code, err.message);
+            
             // Handle multer-specific errors
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(413).json({
@@ -108,6 +123,8 @@ router.post('/generate-image', (req, res, next) => {
                 message: err.message
             });
         } else if (err) {
+            console.error('❌ Upload error:', err.message);
+            
             // Handle other errors (e.g., file type validation)
             return res.status(400).json({
                 success: false,
@@ -116,6 +133,7 @@ router.post('/generate-image', (req, res, next) => {
             });
         }
         
+        console.log('✅ Upload successful, proceeding to controller...');
         // If no errors, proceed to the controller
         next();
     });

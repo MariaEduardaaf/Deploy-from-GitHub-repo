@@ -14,14 +14,30 @@ const Replicate = require('replicate');
  */
 const generateBabyImage = async (req, res) => {
     try {
+        console.log('🚀 Starting image generation request...');
+        console.log('📥 Request files:', req.files ? req.files.length : 'undefined');
+        console.log('📥 Request body:', req.body);
+        
         // Check if files were uploaded
         if (!req.files || req.files.length === 0) {
+            console.log('❌ No files uploaded');
             return res.status(400).json({
                 success: false,
                 error: 'No images uploaded',
                 message: 'Please upload at least 1 image (max 2)'
             });
         }
+        
+        // Log file details
+        req.files.forEach((file, index) => {
+            console.log(`📎 File ${index + 1}:`, {
+                filename: file.filename,
+                path: file.path,
+                size: file.size,
+                mimetype: file.mimetype,
+                exists: fs.existsSync(file.path)
+            });
+        });
 
         // Validate OpenAI API key
         if (!process.env.OPENAI_API_KEY) {
